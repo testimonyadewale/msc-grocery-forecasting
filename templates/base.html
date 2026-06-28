@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grocery Demand Forecasting System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        nav {
+            background-color: #1A3A5C;
+            padding: 15px 30px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+        nav a:hover {
+            background-color: #2563A8;
+        }
+        nav .brand {
+            font-size: 16px;
+            font-weight: bold;
+            margin-right: auto;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        h1 {
+            color: #1A3A5C;
+            border-bottom: 3px solid #2563A8;
+            padding-bottom: 10px;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .btn {
+            background-color: #2563A8;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background-color: #1A3A5C;
+        }
+        .success {
+            color: #14532D;
+            background: #F0FDF4;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border-left: 4px solid #14532D;
+        }
+        .error {
+            color: #7F1D1D;
+            background: #FEF2F2;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border-left: 4px solid #7F1D1D;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <span class="brand">🛒 Grocery Forecasting System</span>
+        <a href="/">Home</a>
+        <a href="/upload">Upload Data</a>
+        <a href="/dashboard">EDA Dashboard</a>
+        <a href="/forecast">Forecasts</a>
+        <a href="/compare">Model Comparison</a>
+        <a href="/alerts">Inventory Alerts</a>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

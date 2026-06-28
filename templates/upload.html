@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Upload Sales Data</h1>
+
+<div class="card">
+    <p>Upload your grocery sales CSV file to begin. The file must contain these four columns:
+    <strong>date, store, item, sales</strong></p>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".csv"
+               style="margin: 15px 0; display: block;">
+        <button type="submit" class="btn">Upload and Process</button>
+    </form>
+
+    {% if message %}
+        <div class="{% if error %}error{% else %}success{% endif %}"
+             style="margin-top: 20px;">
+            {{ message }}
+        </div>
+    {% endif %}
+
+</div>
+
+{% if preview %}
+<div class="card">
+    <h2>Data Preview — First 5 Rows</h2>
+    <table style="width:100%; border-collapse:collapse; font-size:14px;">
+        <thead>
+            <tr style="background-color:#1A3A5C; color:white;">
+                {% for col in columns %}
+                <th style="padding:10px; text-align:left;">{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in preview %}
+            <tr style="border-bottom:1px solid #eee;">
+                {% for col in columns %}
+                <td style="padding:10px;">{{ row[col] }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p style="margin-top:15px; color:#666;">
+        Dataset loaded: <strong>{{ shape[0] }}</strong> rows,
+        <strong>{{ shape[1] }}</strong> columns
+    </p>
+    <a href="/dashboard" class="btn" style="margin-top:10px;">
+        Go to EDA Dashboard →
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}

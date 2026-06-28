@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>EDA Dashboard</h1>
+
+<div class="card">
+    <p>Dataset loaded: <strong>{{ rows }}</strong> rows across
+    <strong>{{ stores }}</strong> stores and
+    <strong>{{ items }}</strong> items from
+    <strong>{{ date_min }}</strong> to <strong>{{ date_max }}</strong></p>
+</div>
+
+<div class="card">
+    <h2>Total Daily Sales Over Time</h2>
+    {{ chart1 | safe }}
+</div>
+
+<div class="card">
+    <h2>Average Sales by Day of Week</h2>
+    {{ chart2 | safe }}
+</div>
+
+<div class="card">
+    <h2>Average Sales by Month</h2>
+    {{ chart3 | safe }}
+</div>
+
+<a href="/forecast" class="btn">Go to Forecasting →</a>
+
+{% endblock %}
