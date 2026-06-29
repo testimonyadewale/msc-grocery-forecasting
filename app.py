@@ -193,36 +193,63 @@ def compare():
     if 'results' not in session:
         return render_template('compare.html', ready=False)
 
+    import io
+
     results_df = pd.read_json(io.StringIO(session['results']))
     results_df = results_df.rename(columns={'Improvement_%': 'improvement'})
-    results          = results_df.to_dict('records')
+    results_df = results_df.round(4)
+    results    = results_df.to_dict('records')
     best_improvement = results_df['improvement'].max()
 
-    fig = px.bar(results_df,
-                 x='Model',
-                 y='MAE',
-                 title='MAE by Model — Lower is Better',
-                 color='Model',
-                 color_discrete_map={
-                     'Moving Average (Baseline)': "#E00606",
-                     'Random Forest':             "#0B0ECC",
-                     'XGBoost':                   "#0AC733"
-                 })
-    fig.update_layout(
-        xaxis_title='Model',
-        yaxis_title='Mean Absolute Error',
-        plot_bgcolor='white',
-        height=350,
-        showlegend=False)
+    charts = []
+    for _, row in results_df.iterrows():
+        fig = go.Figure()
 
-    chart = pio.to_html(fig, full_html=False)
+        fig.add_trace(go.Bar(
+            x=['MAE'],
+            y=[row['MAE']],
+            name='MAE',
+            marker_color='#DC2626',
+            text=[row['MAE']],
+            textposition='outside',
+            hovertemplate=f'MAE: {row["MAE"]}<extra></extra>'))
+
+        fig.add_trace(go.Bar(
+            x=['RMSE'],
+            y=[row['RMSE']],
+            name='RMSE',
+            marker_color='#2563A8',
+            text=[row['RMSE']],
+            textposition='outside',
+            hovertemplate=f'RMSE: {row["RMSE"]}<extra></extra>'))
+
+        fig.add_trace(go.Bar(
+            x=['R\u00b2'],
+            y=[row['R2']],
+            name='R\u00b2',
+            marker_color='#14532D',
+            text=[row['R2']],
+            textposition='outside',
+            hovertemplate=f'R\u00b2: {row["R2"]}<extra></extra>'))
+
+        fig.update_layout(
+            title=f'{row["Model"]}',
+            xaxis_title='Metric',
+            yaxis_title='Score',
+            plot_bgcolor='white',
+            height=360,
+            showlegend=True,
+            bargap=0.3,
+            uniformtext_minsize=8,
+            uniformtext_mode='hide')
+
+        charts.append(pio.to_html(fig, full_html=False))
 
     return render_template('compare.html',
                            ready=True,
                            results=results,
                            best_improvement=best_improvement,
-                           chart=chart)
-
+                           charts=charts)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -16,18 +16,19 @@ FEATURE_COLS = [
     'year', 'quarter', 'is_weekend'
 ]
 
+
 def engineer_features(df):
-    df = df.sort_values(['store','item','date']).reset_index(drop=True)
+    df = df.sort_values(['store', 'item', 'date']).reset_index(drop=True)
 
     for lag in [1, 7, 14, 28, 365]:
-        df[f'lag_{lag}'] = df.groupby(['store','item'])['sales'].shift(lag)
+        df[f'lag_{lag}'] = df.groupby(['store', 'item'])['sales'].shift(lag)
 
     for w in [7, 28, 84]:
-        df[f'rolling_mean_{w}'] = df.groupby(['store','item'])['sales'].transform(
+        df[f'rolling_mean_{w}'] = df.groupby(['store', 'item'])['sales'].transform(
             lambda x: x.shift(1).rolling(w).mean())
 
     for w in [7, 28]:
-        df[f'rolling_std_{w}'] = df.groupby(['store','item'])['sales'].transform(
+        df[f'rolling_std_{w}'] = df.groupby(['store', 'item'])['sales'].transform(
             lambda x: x.shift(1).rolling(w).std())
 
     df['day_of_week']  = df['date'].dt.dayofweek
@@ -39,6 +40,7 @@ def engineer_features(df):
 
     df = df.dropna()
     return df
+
 
 def run_models(filepath):
     df = pd.read_csv(filepath)
@@ -57,10 +59,12 @@ def run_models(filepath):
         mae  = mean_absolute_error(y_true, y_pred)
         rmse = np.sqrt(mean_squared_error(y_true, y_pred))
         r2   = r2_score(y_true, y_pred)
-        return {'Model': name,
-                'MAE':  round(mae, 4),
-                'RMSE': round(rmse, 4),
-                'R2':   round(r2, 4)}
+        return {
+            'Model': name,
+            'MAE':   round(mae, 4),
+            'RMSE':  round(rmse, 4),
+            'R2':    round(r2, 4)
+        }
 
     # Moving Average
     ma_pred    = X_test['rolling_mean_28'].fillna(y_train.mean())
@@ -90,16 +94,13 @@ def run_models(filepath):
 
     # Comparison table
     results_df = pd.DataFrame([results_ma, results_rf, results_xgb])
-baseline   = results_ma['MAE']
-results_df['Improvement_%'] = (
-    (baseline - results_df['MAE']) / baseline * 100
-).round(1)
-results_df['R2'] = results_df['R2'].round(4)
-results_df['MAE'] = results_df['MAE'].round(4)
-results_df['RMSE'] = results_df['RMSE'].round(4)
+    baseline   = results_ma['MAE']
+    results_df['Improvement_%'] = (
+        (baseline - results_df['MAE']) / baseline * 100
+    ).round(1)
 
     # Sample predictions for chart — Store 1 Item 1
-    sample = test[(test['store']==1) & (test['item']==1)].copy()
+    sample      = test[(test['store'] == 1) & (test['item'] == 1)].copy()
     sample_feat = sample[FEATURE_COLS]
 
     chart_data = pd.DataFrame({
