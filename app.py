@@ -1,8 +1,12 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 import pandas as pd
-import os
+import numpy as np
 import plotly.express as px
+import plotly.graph_objects as go
 import plotly.io as pio
+from models import run_models
+import os
+import io
 
 app = Flask(__name__)
 app.secret_key = 'msc_grocery_2024'
@@ -10,9 +14,11 @@ app.secret_key = 'msc_grocery_2024'
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
 @app.route('/')
 def home():
     return render_template('base.html')
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -65,6 +71,8 @@ def upload():
                            preview=preview,
                            columns=columns,
                            shape=shape)
+
+
 @app.route('/dashboard')
 def dashboard():
     filepath = os.path.join(UPLOAD_FOLDER, 'train.csv')
@@ -74,14 +82,13 @@ def dashboard():
 
     df = pd.read_csv(filepath)
     df['date'] = pd.to_datetime(df['date'])
-    # Summary stats
+
     rows     = len(df)
     stores   = df['store'].nunique()
     items    = df['item'].nunique()
     date_min = df['date'].min().strftime('%d %b %Y')
     date_max = df['date'].max().strftime('%d %b %Y')
 
-    # Chart 1 — total daily sales over time
     daily = df.groupby('date')['sales'].sum().reset_index()
     fig1  = px.line(daily, x='date', y='sales',
                     title='Total Daily Sales 2013-2017',
@@ -92,7 +99,6 @@ def dashboard():
                        height=350)
     chart1 = pio.to_html(fig1, full_html=False)
 
-    # Chart 2 — average sales by day of week
     df['day_of_week'] = df['date'].dt.day_name()
     day_order = ['Monday','Tuesday','Wednesday',
                  'Thursday','Friday','Saturday','Sunday']
@@ -109,7 +115,6 @@ def dashboard():
                        height=320)
     chart2 = pio.to_html(fig2, full_html=False)
 
-    # Chart 3 — average sales by month
     df['month'] = df['date'].dt.month
     month_names = {1:'Jan',2:'Feb',3:'Mar',4:'Apr',
                    5:'May',6:'Jun',7:'Jul',8:'Aug',
@@ -134,5 +139,90 @@ def dashboard():
                            chart1=chart1,
                            chart2=chart2,
                            chart3=chart3)
+
+
+@app.route('/forecast')
+def forecast():
+    filepath = os.path.join(UPLOAD_FOLDER, 'train.csv')
+
+    if not os.path.exists(filepath):
+        return render_template('forecast.html', ready=False)
+
+    results_df, chart_data, simulation = run_models(filepath)
+
+    session['results']    = results_df.to_json()
+    session['simulation'] = simulation
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=chart_data['date'],
+        y=chart_data['actual'],
+        name='Actual Sales',
+        line=dict(color="#00A116", width=2)))
+
+    fig.add_trace(go.Scatter(
+        x=chart_data['date'],
+        y=chart_data['xgb_pred'],
+        name='XGBoost Forecast',
+        line=dict(color="#AD0000", dash='dash')))
+
+    fig.add_trace(go.Scatter(
+        x=chart_data['date'],
+        y=chart_data['ma_pred'],
+        name='Moving Average',
+        line=dict(color="#002679", dash='dot')))
+
+    fig.update_layout(
+        title='Actual vs Predicted — Store 1, Item 1 (2017)',
+        xaxis_title='Date',
+        yaxis_title='Units Sold',
+        plot_bgcolor='white',
+        height=420,
+        legend=dict(x=0, y=1))
+
+    chart = pio.to_html(fig, full_html=False)
+
+    return render_template('forecast.html',
+                           ready=True,
+                           chart=chart)
+
+
+@app.route('/compare')
+def compare():
+    if 'results' not in session:
+        return render_template('compare.html', ready=False)
+
+    results_df = pd.read_json(io.StringIO(session['results']))
+    results_df = results_df.rename(columns={'Improvement_%': 'improvement'})
+    results          = results_df.to_dict('records')
+    best_improvement = results_df['improvement'].max()
+
+    fig = px.bar(results_df,
+                 x='Model',
+                 y='MAE',
+                 title='MAE by Model — Lower is Better',
+                 color='Model',
+                 color_discrete_map={
+                     'Moving Average (Baseline)': "#0EA300",
+                     'Random Forest':             "#0B0ECC",
+                     'XGBoost':                   "#C90707"
+                 })
+    fig.update_layout(
+        xaxis_title='Model',
+        yaxis_title='Mean Absolute Error',
+        plot_bgcolor='white',
+        height=350,
+        showlegend=False)
+
+    chart = pio.to_html(fig, full_html=False)
+
+    return render_template('compare.html',
+                           ready=True,
+                           results=results,
+                           best_improvement=best_improvement,
+                           chart=chart)
+
+
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Model Comparison</h1>
+
+{% if not ready %}
+<div class="card">
+    <p>No results yet. Please go to
+    <a href="/forecast">Forecasting</a> first to train the models.</p>
+</div>
+
+{% else %}
+
+<div class="card">
+    <h2>Performance Metrics — All Four Models</h2>
+    <p>Lower MAE and RMSE is better. Higher R² is better.
+    Improvement is calculated against the Moving Average baseline.</p>
+
+    <table style="width:100%; border-collapse:collapse;
+                  font-size:14px; margin-top:15px;">
+        <thead>
+            <tr style="background-color:#1A3A5C; color:white;">
+                <th style="padding:12px; text-align:left;">Model</th>
+                <th style="padding:12px; text-align:center;">MAE</th>
+                <th style="padding:12px; text-align:center;">RMSE</th>
+                <th style="padding:12px; text-align:center;">R²</th>
+                <th style="padding:12px; text-align:center;">
+                    Improvement vs Baseline</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in results %}
+            <tr style="border-bottom:1px solid #eee;
+                {% if row.improvement == best_improvement %}
+                background-color:#F0FDF4;
+                {% endif %}">
+                <td style="padding:12px;">
+                    {{ row.Model }}
+                    {% if row.improvement == best_improvement %}
+                    ⭐ Best
+                    {% endif %}
+                </td>
+                <td style="padding:12px; text-align:center;">
+                    {{ row.MAE }}</td>
+                <td style="padding:12px; text-align:center;">
+                    {{ row.RMSE }}</td>
+                <td style="padding:12px; text-align:center;">
+                    {{ row.R2 }}</td>
+                <td style="padding:12px; text-align:center;">
+                    {% if row.improvement > 0 %}
+                    <span style="color:#14532D; font-weight:bold;">
+                        +{{ row.improvement }}%
+                    </span>
+                    {% else %}
+                    <span style="color:#666;">—</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <h2>MAE Comparison Chart</h2>
+    {{ chart | safe }}
+</div>
+
+<a href="/alerts" class="btn">See Inventory Alerts →</a>
+
+{% endif %}
+{% endblock %}

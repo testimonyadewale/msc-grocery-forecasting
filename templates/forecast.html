@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Demand Forecasting</h1>
+
+{% if not ready %}
+<div class="card">
+    <p>No data loaded yet. Please
+    <a href="/upload">upload your dataset</a> first.</p>
+</div>
+
+{% else %}
+<div class="card">
+    <p>Models trained on 2013 to 2016 data and tested on 2017.
+    The chart below shows Store 1, Item 1 as a representative example.</p>
+</div>
+
+<div class="card">
+    <h2>Actual vs Predicted Sales — Store 1, Item 1 (2017)</h2>
+    {{ chart | safe }}
+</div>
+
+<a href="/compare" class="btn">See Model Comparison →</a>
+
+{% endif %}
+{% endblock %}
