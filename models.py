@@ -90,13 +90,16 @@ def run_models(filepath):
 
     # Comparison table
     results_df = pd.DataFrame([results_ma, results_rf, results_xgb])
-    baseline   = results_ma['MAE']
-    results_df['Improvement_%'] = (
-        (baseline - results_df['MAE']) / baseline * 100
-    ).round(1)
+baseline   = results_ma['MAE']
+results_df['Improvement_%'] = (
+    (baseline - results_df['MAE']) / baseline * 100
+).round(1)
+results_df['R2'] = results_df['R2'].round(4)
+results_df['MAE'] = results_df['MAE'].round(4)
+results_df['RMSE'] = results_df['RMSE'].round(4)
 
     # Sample predictions for chart — Store 1 Item 1
-    sample      = test[(test['store']==1) & (test['item']==1)].copy()
+    sample = test[(test['store']==1) & (test['item']==1)].copy()
     sample_feat = sample[FEATURE_COLS]
 
     chart_data = pd.DataFrame({

@@ -204,9 +204,9 @@ def compare():
                  title='MAE by Model — Lower is Better',
                  color='Model',
                  color_discrete_map={
-                     'Moving Average (Baseline)': "#0EA300",
+                     'Moving Average (Baseline)': "#E00606",
                      'Random Forest':             "#0B0ECC",
-                     'XGBoost':                   "#C90707"
+                     'XGBoost':                   "#0AC733"
                  })
     fig.update_layout(
         xaxis_title='Model',
